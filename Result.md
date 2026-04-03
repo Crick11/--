@@ -150,6 +150,14 @@ $$
 
 ### 4.1 25 组合分组规则与结果判读
 
+本节对应回归方程（对每个组合 p 分别做时间序列回归）：
+
+$$
+ExcessRet_{p,t+1}=\alpha_p+\beta_{M,p}MKT\_RF_t+\beta_{S,p}SMB_t+\beta_{H,p}HML_t+\beta_{R,p}RMW_t+\beta_{C,p}CMA_t+\beta_{SENT,p}SENT_t+u_{p,t+1}
+$$
+
+其中 \(\alpha_p\) 用于判断该组合是否存在模型未解释的超额收益，\(\beta_{SENT,p}\) 用于判断情绪因子暴露是否显著。
+
 分组规则：
 1. 每月先按市值分 5 组（S1~S5）。
 2. 再在每个市值组内按 BM 分 5 组（B1~B5）。
@@ -202,6 +210,14 @@ $$
 
 ### 5.1 日度主回归（Fama-MacBeth + NW）
 
+本节对应回归方程：
+
+$$
+R_{i,t+1}=\alpha+\beta_1 NetTone_{i,t}+\beta_2 HasNews_{i,t}+\gamma'Controls_{i,t}+IndustryFE+\varepsilon_{i,t+1}
+$$
+
+逐日做横截面回归得到 \(\hat\beta_t\)，再在时间维度求均值，并采用 Newey-West 标准误进行显著性检验。
+
 | 变量 | 网络 |
 |---|---:|
 | NetTone | 0.003205*** |
@@ -252,6 +268,16 @@ $$
 
 ### 5.3 替换因变量检验（流式 OLS + 行业FE + 股票聚类稳健）
 
+本节对应回归方程：
+
+$$
+Y\_turnover_{i,t+1}=\alpha+\beta_1 NetTone_{i,t}+\beta_2 HasNews_{i,t}+\gamma'Controls_{i,t}+IndustryFE+\varepsilon_{i,t+1}
+$$
+
+$$
+Y\_volatility_{i,t+1}=\alpha+\beta_1 NetTone_{i,t}+\beta_2 HasNews_{i,t}+\gamma'Controls_{i,t}+IndustryFE+\varepsilon_{i,t+1}
+$$
+
 | 因变量 | NetTone | HasNews |
 |---|---:|---:|
 | 次日换手率 Y_turnover_t1 | 0.1776*** | 0.2517*** |
@@ -267,16 +293,48 @@ $$
 
 ### 6.1 机构持股比例异质性（仅网络，滞后一季度 + 中位数分组）
 
+本节采用两种互补的异质性识别方法：分组回归与交互项回归。
+
+方法一：分组回归（按滞后一季度机构持股中位数分为高组/低组）
+
+$$
+R_{i,t+1}=\alpha_g+\beta_g NetTone_{i,t}+\gamma_g'Controls_{i,t}+IndustryFE+\varepsilon_{i,t+1},\quad g\in\{High,Low\}
+$$
+
+分组法的核心比较量为
+
+$$
+\Delta\beta=\beta^{High}_{NetTone}-\beta^{Low}_{NetTone}
+$$
+
+方法二：交互项回归（在同一方程内检验调节效应）
+
+$$
+R_{i,t+1}=\alpha+\beta_1 NetTone_{i,t}+\beta_2 InstHigh_{i,t-1Q}+\beta_3\left(NetTone_{i,t}\times InstHigh_{i,t-1Q}\right)+\gamma'Controls_{i,t}+IndustryFE+\varepsilon_{i,t+1}
+$$
+
+其中，低机构组情绪斜率为 \(\beta_1\)，高机构组情绪斜率为 \(\beta_1+\beta_3\)，理论上两组斜率差对应 \(\beta_3\)。
+
 | 检验项 | 网络 |
 |---|---:|
 | 高组-低组 NetTone 差值 | -0.000978*** |
 | NetTone × InstHigh | -0.001073*** |
+
+对应关系说明：第一行来自分组回归法，第二行来自交互项法；两者方向一致，均表明机构持股越高，情绪定价斜率越弱。
 
 结论：
 1. 机构持股越高，情绪定价斜率越弱（显著负向调节）。
 2. 说明机构投资者占比较高的股票中，短期情绪驱动效应更易被理性交易吸收。
 
 ### 6.2 新闻来源异质性：月度 25 组合回归对比
+
+本节对应回归方程（按来源分别估计）：
+
+$$
+ExcessRet^{(s)}_{p,t+1}=\alpha^{(s)}_p+\beta^{(s)}_{M,p}MKT\_RF_t+\beta^{(s)}_{S,p}SMB_t+\beta^{(s)}_{H,p}HML_t+\beta^{(s)}_{R,p}RMW_t+\beta^{(s)}_{C,p}CMA_t+\beta^{(s)}_{SENT,p}SENT^{(s)}_t+u^{(s)}_{p,t+1},\quad s\in\{报刊,网络\}
+$$
+
+
 
 | 指标 | 报刊 | 网络 |
 |---|---:|---:|
@@ -293,6 +351,14 @@ $$
 
 ### 6.3 新闻来源异质性：日度主回归对比（Fama-MacBeth + NW）
 
+本节对应回归方程（按来源分别估计）：
+
+$$
+R^{(s)}_{i,t+1}=\alpha^{(s)}+\beta^{(s)}_1 NetTone^{(s)}_{i,t}+\beta^{(s)}_2 HasNews^{(s)}_{i,t}+\gamma^{(s)\prime}Controls^{(s)}_{i,t}+IndustryFE+\varepsilon^{(s)}_{i,t+1},\quad s\in\{报刊,网络\}
+$$
+
+
+
 | 变量 | 报刊 | 网络 |
 |---|---:|---:|
 | NetTone | 0.000073 | 0.003205*** |
@@ -308,6 +374,13 @@ $$
 
 ### 6.4 新闻来源异质性：替换自变量回归对比（12 组）
 
+本节对应回归方程（按来源、按替换变量分别估计）：
+
+$$
+R^{(s)}_{i,t+1}=\alpha^{(s)}+\beta^{(s)}_X X^{(s)}_{i,t}+\beta^{(s)}_H HasNews^{(s)}_{i,t}+\gamma^{(s)\prime}Controls^{(s)}_{i,t}+IndustryFE+\varepsilon^{(s)}_{i,t+1},\quad X\in\{TotalNews,Polarization,Extremity,BiasPos,BiasNeg,Uncertainty\}
+$$
+
+
 | 替换变量 X | \(\beta_X\)（报刊） | \(\beta_X\)（网络） |
 |---|---:|---:|
 | TotalNews | -0.000008 | 0.000052** |
@@ -322,6 +395,18 @@ $$
 结论：网络来源在替换变量体系下表现出更稳定、更强的预测一致性。
 
 ### 6.5 新闻来源异质性：替换因变量回归对比（流式 OLS + 行业FE + 股票聚类稳健）
+
+本节对应回归方程（按来源分别估计）：
+
+$$
+Y^{(s)}_{turnover,i,t+1}=\alpha^{(s)}+\beta^{(s)}_1 NetTone^{(s)}_{i,t}+\beta^{(s)}_2 HasNews^{(s)}_{i,t}+\gamma^{(s)\prime}Controls^{(s)}_{i,t}+IndustryFE+\varepsilon^{(s)}_{i,t+1}
+$$
+
+$$
+Y^{(s)}_{volatility,i,t+1}=\alpha^{(s)}+\beta^{(s)}_1 NetTone^{(s)}_{i,t}+\beta^{(s)}_2 HasNews^{(s)}_{i,t}+\gamma^{(s)\prime}Controls^{(s)}_{i,t}+IndustryFE+\varepsilon^{(s)}_{i,t+1}
+$$
+
+
 
 | 样本 | 因变量 | NetTone | HasNews |
 |---|---|---:|---:|
@@ -339,6 +424,14 @@ $$
 
 ### 7.1 滞后衰减检验（网络）
 
+本节对应回归方程：
+
+$$
+R_{i,t+1}=\alpha+\beta_0 NetTone_{i,t}+\beta_1 NetTone_{i,t-1}+\beta_2 NetTone_{i,t-2}+\beta_H HasNews_{i,t}+\gamma'Controls_{i,t}+IndustryFE+\varepsilon_{i,t+1}
+$$
+
+若 \(|\beta_0|>|\beta_1|,|\beta_2|\) 且后两者不显著，可解释为情绪冲击的短期衰减特征。
+
 1. 滞后衰减（网络）
 - NetTone_t = 0.002801***
 - NetTone_t-1 = -0.000014
@@ -349,6 +442,34 @@ $$
 2. 当期情绪效应显著、滞后项快速衰减，说明结果更符合短期报道冲击，而非长期趋势延续。
 
 ### 7.2 选择偏误检验
+
+本节对应回归方程：
+
+1. IPW（逆概率加权）
+
+$$
+\hat\beta_{IPW}=\arg\min_{\beta}\sum_{i,t}w_{i,t}\left(R_{i,t+1}-X_{i,t}'\beta\right)^2,\quad w_{i,t}=\frac{1}{\hat P(HasNews_{i,t}=1\mid Z_{i,t})}
+$$
+
+2. Heckman 两阶段
+
+第一阶段（选择方程）：
+
+$$
+HasNews^*_{i,t}=Z'_{i,t}\pi+u_{i,t},\quad HasNews_{i,t}=\mathbf{1}(HasNews^*_{i,t}>0)
+$$
+
+逆米尔斯比率：
+
+$$
+IMR_{i,t}=\lambda_{i,t}=\frac{\phi(Z'_{i,t}\hat\pi)}{\Phi(Z'_{i,t}\hat\pi)}
+$$
+
+第二阶段（结果方程）：
+
+$$
+R_{i,t+1}=\alpha+\beta_1 NetTone_{i,t}+\beta_2 HasNews_{i,t}+\gamma'Controls_{i,t}+\rho\,IMR_{i,t}+IndustryFE+\varepsilon_{i,t+1}
+$$
 
 1. IPW
 - 基准未加权 NetTone = 0.003205***
@@ -362,6 +483,14 @@ $$
 结论：选择偏误不是主结论的主要驱动。
 
 ### 7.3 遗漏变量偏误检验：双固定效应面板
+
+本节对应回归方程（TWFE）：
+
+$$
+R_{i,t+1}=\alpha_i+\delta_t+\beta_1 NetTone_{i,t}+\beta_2 HasNews_{i,t}+\gamma'Controls_{i,t}+\varepsilon_{i,t+1}
+$$
+
+其中 \(\alpha_i\) 为个股固定效应，\(\delta_t\) 为日期固定效应；与 pooled + 行业FE 结果对比用于识别遗漏变量偏误风险。
 
 | 模型 | NetTone |
 |---|---:|
